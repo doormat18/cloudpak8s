@@ -3,22 +3,19 @@ import { HomepageBanner, HomepageCallout } from 'gatsby-theme-carbon';
 import HomepageTemplate from 'gatsby-theme-carbon/src/templates/Homepage';
 import { calloutLink } from './Homepage.module.scss';
 
-import Carbon from '../../images/cloud-paks-small.png';
+import Carbon from '../../images/ContainersOnDock.jpg';
 
-const FirstLeftText = () => <p>IBM Cloud Pak Playbook is moving</p>;
+const FirstLeftText = () => <p>Cloud Pak Playbook is now Cloud Paks At Work</p>;
 const FirstRightText = () => (
   <p>
     <font size="5">
-    The IBM Cloud Pak Playbook web site will be moving to an IBM internal
-    network location as of October 19, 2020. The cloudpak8s.io URL will 
-    remain the same, but the site will only be accessible to users on the
-    IBM internal network.
+   All installation related instructions have been removed. The site contains solution-oriented information on using IBM Cloud Paks and information on managing your environment. For IBM Cloud Pak installation instructions, please visit the IBM Knowledge Center at the link below:
     </font>
     <a
       className={calloutLink}
-      href="https://www.ibm.com/cloud/paks/"
+      href="https://www.ibm.com/support/knowledgecenter/en/cloudpaks"
     >
-      IBM Cloud Paks →
+      IBM Knowledge Center →
     </a>
   </p>
 );
@@ -41,7 +38,7 @@ const SecondRightText = () => (
   </p>
 );
 
-const BannerText = () => <h1>IBM Cloud Pak Playbook</h1>;
+const BannerText = () => <h1>Cloud Paks At Work</h1>;
 
 const customProps = {
   Banner: <HomepageBanner renderText={BannerText} image={Carbon} />,
