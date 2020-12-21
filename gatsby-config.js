@@ -15,7 +15,7 @@ module.exports = {
         background_color: '#ffffff',
         theme_color: '#0062ff',
         display: 'browser',
-        icon: '/static/assets/img/favicon/icp-favicon.png'
+        icon: 'static/assets/img/favicon/icp-favicon.png'
       },
     },
     {
