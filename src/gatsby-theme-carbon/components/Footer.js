@@ -6,7 +6,7 @@ const currentYear = new Date().getFullYear();
 const Content = ({ buildTime }) => (
   <>
     <p>
-      The IBM Cloud Pak Playbook was last updated on {buildTime}. 
+      Cloud Paks At Work was last updated on {buildTime}. 
     </p>
     <p>      
           Built with{' '}
