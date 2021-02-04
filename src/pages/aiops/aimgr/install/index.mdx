@@ -5,7 +5,7 @@ keywords: 'ibm,install,cs,cloudpak,watson,aiops,watson-aiops,ai-manager,ai-mgr'
 In this section we describe the installation of Watson AIOps AI Manager on IBM RedHat OpenShift Kubernetes Service (ROKS). 
 This document was written based on our experience with installation on Red Hat OpenShift 4.3 running on x86 architecture.
 
-**Important**: At the time of writing OpenShift 4.5 is the highest supported version for Watson AIOps.
+**Important**: OpenShift 4.3 and 4.5 are the only supported versions for Watson AIOps 2.0. OpenShift 4.4 is not supported.
 
 ## Client Workstation Environment
 
@@ -33,7 +33,13 @@ yum install -y kubectl
 
 ## Storage
 
-Review the [Storage considerations](https://www.ibm.com/support/knowledgecenter/en/SSQNUZ_3.0.1/cpd/plan/storage_considerations.html) for CP4D. For AI Manager, only Portworx and IBM Cloud File Storage are supported. For production deployments, Portworx is recommended. The guide below uses IBM Cloud File Storage (ibmc-file-gold-gid storage class).
+Review the [Storage considerations](https://www.ibm.com/support/knowledgecenter/en/SSQNUZ_3.0.1/cpd/plan/storage_considerations.html) for CP4D. The [storage requirements](https://www.ibm.com/support/knowledgecenter/en/SSQNUZ_3.0.1/svc-aiops/aiops-prereqs.html#aiops-prereqs__storage) for AI Manager are a subset of the supported storage options for CP4D. Currently, the only *supported* storage option for AI Manager running in production is Portworx. The guide below uses IBM Cloud File Storage (ibmc-file-gold-gid storage class) so this would not be a supported production configuration.
+
+When using IBM Cloud File Storage, the S3FS configuration will not work and the training modules will read the log files directly from the Minio buckets, which reduces performance for training. The overall storage performance is slower with IBM Cloud File Storage.
+
+### NFS
+
+NFS storage is another option for non-production systems. A prerequisite is to configure the NFS server with `no_root_squash` or the installation of CP4D will fail. Running an NFS server with `no_root_squash` is considered insecure and is not recommeded by Red Hat.
 
 ## Cloud Pak for Data (CP4D) Installation
 
@@ -135,38 +141,34 @@ bin/cpd-linux --repo ./repo.yaml \
 The Nginx pods need the certificate updated or else there will be problems bringing up the UI and when configuring Slack integration. The following commands will take the valid certificate from OpenShift and apply it to the Nginx pods. Keep in mind that this certificate expires every 3 months, so this will need done again in the future.
 
 ```
-oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}' | xargs oc get secret -n ibm-cert-store -o yaml > tmpcert.yaml
-cat tmpcert.yaml | grep tls.crt | awk '{print $2}' |base64 -d > cert.crt
-cat tmpcert.yaml | grep tls.key | awk '{print $2}' |base64 -d > cert.key
+ingress_pod=$(oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}')
+oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.crt"}}' ${ingress_pod} | base64 -d > cert.crt
+oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.key"}}' ${ingress_pod} | base64 -d > cert.key
 ibm_nginx_pod=$(oc get pods -l component=ibm-nginx -o jsonpath='{ .items[0].metadata.name }')
 oc exec ${ibm_nginx_pod} -- mkdir -p "/user-home/_global_/customer-certs"
 oc cp cert.crt ${ibm_nginx_pod}:/user-home/_global_/customer-certs/
 oc cp cert.key ${ibm_nginx_pod}:/user-home/_global_/customer-certs/
 for i in `oc get pods -l component=ibm-nginx -o jsonpath='{ .items[*].metadata.name }' `; do oc exec ${i} -- /scripts/reload.sh; done
-rm tmpcert.yaml cert.crt cert.key
+rm cert.crt cert.key
 ```
 
 Sample output from the above commands:
 
 ```
 reloading nginx conf
-setting up ssl
-using customer certs
+Setting up ssl certificate files...
+Custom ssl certificate files were found. Processing them...
+lrwxrwxrwx. 1 1000321000 root 50 Feb  4 16:42 /nginx_data/defaults.d/external-server.conf -> /nginx_data/defaults.d/external-server.active.conf
 nginx: the configuration file /usr/local/openresty/nginx/conf/nginx.conf syntax is ok
 nginx: configuration file /usr/local/openresty/nginx/conf/nginx.conf test is successful
-2020/09/24 18:04:52 [notice] 211#211: signal process started
+2021/02/04 16:42:08 [notice] 202#202: signal process started
 reloading nginx conf
+Setting up ssl certificate files...
+Custom ssl certificate files were found. Processing them...
+lrwxrwxrwx. 1 1000321000 root 50 Feb  4 16:42 /nginx_data/defaults.d/external-server.conf -> /nginx_data/defaults.d/external-server.active.conf
 nginx: the configuration file /usr/local/openresty/nginx/conf/nginx.conf syntax is ok
 nginx: configuration file /usr/local/openresty/nginx/conf/nginx.conf test is successful
-setting up ssl
-using customer certs
-2020/09/24 18:04:57 [notice] 112#112: signal process started
-reloading nginx conf
-setting up ssl
-using customer certs
-nginx: the configuration file /usr/local/openresty/nginx/conf/nginx.conf syntax is ok
-nginx: configuration file /usr/local/openresty/nginx/conf/nginx.conf test is successful
-2020/09/24 18:05:03 [notice] 44#44: signal process started
+2021/02/04 16:42:10 [notice] 142#142: signal process started
 ```
 
 ## AI Manager Installation
