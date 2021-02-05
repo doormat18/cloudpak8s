@@ -12,6 +12,7 @@
     "serve": "gatsby serve"
   },
   "dependencies": {
+    "@babel/plugin-transform-spread": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
     "@mdx-js/mdx": "^1.6.18",
     "@mdx-js/react": "^1.6.18",
@@ -28,6 +29,7 @@
     "gatsby-source-filesystem": "^2.3.35",
     "gatsby-theme-carbon": "^1.26.18",
     "node-sass": "^4.14.1",
+    "npm": "^7.5.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "sharp": "^0.24.1",
