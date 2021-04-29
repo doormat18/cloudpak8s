@@ -138,6 +138,8 @@ bin/cpd-linux --repo ./repo.yaml \
 
 ### Updating the Nginx Certificate
 
+<span style="color:red">**NOTE: THIS IS ONLY APPLICABLE TO V2.1 AND WILL NOT WORK FOR V3.1**</span>
+
 The Nginx pods need the certificate updated or else there will be problems bringing up the UI and when configuring Slack integration. The following commands will take the valid certificate from OpenShift and apply it to the Nginx pods. Keep in mind that this certificate expires every 3 months, so this will need done again in the future.
 
 ```
